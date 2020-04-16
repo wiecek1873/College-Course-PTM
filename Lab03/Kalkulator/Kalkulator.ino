@@ -2,12 +2,7 @@
 #include <LiquidCrystal.h>
 #define inputSize 16
 
-int number1 = 0;
-int number2 = 0;
-char input[16];
-byte counter = 0;
-char operation;
-
+//Inicjalizacja klawiatury i wyswietlacza
 const byte ROWS = 4;
 const byte COLS = 4;
 
@@ -25,6 +20,14 @@ byte pinyKolumn[COLS] = { 8,9,10,11 };
 Keypad kpd = Keypad( makeKeymap(buttons), pinyRzedow, pinyKolumn, ROWS, COLS);
 LiquidCrystal lcd(2,3,4,5,6,7);
 
+
+int number1 = 0;
+int number2 = 0;
+char input[16];
+byte counter = 0;
+char operation;
+
+//Czysci wejscie
 void inputClear()
 {
     for(int i = 0; i < inputSize; ++i)
@@ -33,9 +36,19 @@ void inputClear()
     }
 }
 
+//Anuluje dotychczas wykonane operacje
+void cancel()
+{
+  counter = -1;
+  inputClear();
+  number1 = 0;
+  number2 = 0;
+  lcd.clear();
+  lcd.setCursor(0,0);
+}
+
 void setup()
 {
-  Serial.begin(9600);
   lcd.begin(16,2);
   lcd.setCursor(0,0);
   lcd.cursor();
@@ -48,20 +61,14 @@ void loop()
 {
   input[counter] = kpd.waitForKey();
   lcd.write(input[counter]);
+  
   if(input[counter] == 'C' )
-  {
-    counter = -1;
-    inputClear();
-    number1 = 0;
-    number2 = 0;
-    lcd.clear();
-    lcd.setCursor(0,0);
-  }
+    cancel();
   
   if(input[counter] == '+' || input[counter] == '-' || input[counter] == '/' || input[counter] == '*')
   {
     operation = input[counter];
-    counter = -1;
+    counter = -1; //Licznik jest ustawiany na -1 poniewaz na koncu petli jest on zwiekszany o 1
     number1 = atoi(input);
     inputClear();
     lcd.setCursor(0,1);
@@ -95,7 +102,7 @@ void loop()
 
     lcd.clear();
     lcd.write("=");
-    Serial.println(result);
+
     itoa(result,resultArr,10);
     lcd.write(resultArr);
 
@@ -104,9 +111,23 @@ void loop()
     number2 = 0;
     
     input[counter] = kpd.waitForKey();
-    lcd.clear();
-    lcd.write(input[counter]);
     
+    if(input[counter] == 'C')
+      cancel();
+      
+    else if(input[counter] == '+' || input[counter] == '-' || input[counter] == '/' || input[counter] == '*')
+    {
+      operation = input[counter];
+      counter = -1;
+      number1 = result;
+      inputClear();
+      lcd.setCursor(0,1);
+    }
+    else
+    {
+      lcd.clear();
+      lcd.write(input[counter]);
+    }
   }
   ++counter;
 }
