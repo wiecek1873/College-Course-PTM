@@ -117,6 +117,7 @@ void loop()
       
     else if(input[counter] == '+' || input[counter] == '-' || input[counter] == '/' || input[counter] == '*')
     {
+      lcd.write(input[counter]);
       operation = input[counter];
       counter = -1;
       number1 = result;
